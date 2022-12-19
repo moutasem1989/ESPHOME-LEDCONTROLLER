@@ -1,0 +1,349 @@
+substitutions:
+  esphome_name: lightname001
+
+esphome:
+  name: "${esphome_name}"
+  platform: ESP32
+  board: esp32dev
+     
+interval:
+  - interval: 10sec
+    then:
+      - if:
+          condition:
+            not:
+              wifi.connected:
+          then:
+            - if:
+                condition:
+                - light.is_off:
+                   id: direct
+                then:
+                - light.turn_on:
+                   id: direct
+                   brightness: 70%
+                   red: 100%
+                   green: 0%
+                   blue: 0%
+                   cold_white: 0%
+                   warm_white: 0%
+            - if:
+                condition:
+                - light.is_on:
+                   id: ambient
+                then:
+                - light.turn_off:
+                   id: ambient
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  reboot_timeout: 60min
+  password: !secret esphome_api_pass
+
+ota:
+  password: !secret esphome_ota_pass
+
+web_server:
+  port: 88
+  auth:
+    username: admin
+    password: !secret web_server_password
+  
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "${esphome_name}"
+    password: !secret backup-wifi_password
+
+captive_portal:
+
+time:
+  - platform: homeassistant
+      
+light:
+  - platform: rgbww
+    id: direct
+    name: "${esphome_name} - Direct"
+    red: output_d_r
+    green: output_d_g
+    blue: output_d_b
+    cold_white: output_d_cw
+    warm_white: output_d_ww
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+    restore_mode: RESTORE_DEFAULT_OFF
+    color_interlock: true
+#    constant_brightness: true
+    default_transition_length: 2.5s
+#    on_turn_on:
+#      if:
+#        condition:
+#        - switch.is_off: powersupply
+#        then:
+#        - switch.turn_on: powersupply
+        
+#    on_turn_off:
+#      if:
+#        condition:
+#          - light.is_off: ambient
+#          - light.is_off: direct
+#        then:
+#          - delay: 3s
+#          - switch.turn_off: powersupply
+
+    effects:
+      # Use default parameters:
+      - random:
+          name: "${esphome_name} direct - Default Random Effect"
+      - random:
+          name: "${esphome_name} direct - Slow Random Effect"
+          transition_length: 30s
+          update_interval: 30s
+      - random:
+          name: "${esphome_name} direct - Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
+      - pulse:
+          name: "${esphome_name} direct - Default Pulse Effect"
+      - pulse:
+          name: "${esphome_name} direct - Fast Pulse Effect"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "${esphome_name} direct - Slow Pulse Effect"
+          # transition_length: 1s      # defaults to 1s
+          update_interval: 2s
+      - flicker:
+          name: "${esphome_name} direct - Default Flicker Effect"
+      - flicker:
+          name: "${esphome_name} direct - Flicker Effect"
+          alpha: 90%
+          intensity: 30%
+    
+  - platform: rgbww
+    id: ambient
+    name: "${esphome_name} - Ambient"
+    red: output_a_r
+    green: output_a_g
+    blue: output_a_b
+    cold_white: output_a_cw
+    warm_white: output_a_ww
+    cold_white_color_temperature: 6536 K
+    warm_white_color_temperature: 2000 K
+    restore_mode: RESTORE_DEFAULT_ON
+    color_interlock: true
+#    constant_brightness: true
+    default_transition_length: 2.5s
+#    on_turn_on:
+#      if:
+#        condition:
+#        - switch.is_off: powersupply
+#        then:
+#        - switch.turn_on: powersupply
+        
+#    on_turn_off:
+#      if:
+#        condition:
+#          - light.is_off: ambient
+#          - light.is_off: direct
+#        then:
+#          - delay: 3s
+#          - switch.turn_off: powersupply
+    
+    effects:
+      # Use default parameters:
+      - random:
+          name: "${esphome_name} ambient - Default Random Effect"
+      - random:
+          name: "${esphome_name} ambient - Slow Random Effect"
+          transition_length: 30s
+          update_interval: 30s
+      - random:
+          name: "${esphome_name} ambient - Fast Random Effect"
+          transition_length: 4s
+          update_interval: 5s
+      - pulse:
+          name: "${esphome_name} ambient - Default Pulse Effect"
+      - pulse:
+          name: "${esphome_name} ambient - Fast Pulse Effect"
+          transition_length: 0.5s
+          update_interval: 0.5s
+      - pulse:
+          name: "${esphome_name} ambient - Slow Pulse Effect"
+          # transition_length: 1s      # defaults to 1s
+          update_interval: 2s
+      - flicker:
+          name: "${esphome_name} ambient - Default Flicker Effect"
+      - flicker:
+          name: "${esphome_name} ambient - Flicker Effect"
+          alpha: 90%
+          intensity: 30%
+          
+output:
+  - id: output_d_r
+    platform: ledc
+    pin: GPIO4
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_d_g
+    platform: ledc
+    pin: GPIO12
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_d_b
+    platform: ledc
+    pin: GPIO13
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_d_cw
+    platform: ledc
+    pin: GPIO16
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_d_ww
+    platform: ledc
+    pin: GPIO17
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_a_r
+    platform: ledc
+    pin: GPIO19
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_a_g
+    platform: ledc
+    pin: GPIO25
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_a_b
+    platform: ledc
+    pin: GPIO26
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_a_cw
+    platform: ledc
+    pin: GPIO27
+    max_power: 100%
+    frequency: 1000Hz
+    
+  - id: output_a_ww
+    platform: ledc
+    pin: GPIO32
+    max_power: 100%
+    frequency: 1000Hz
+    
+
+#switch:
+#  - platform: restart
+#    name: ${esphome_name}-restart
+#    id: restart_switch
+#  - platform: gpio
+#    id: powersupply
+#    pin: GPIO33
+#    on_turn_off:
+#      then:
+#        - light.turn_off: ambient
+#        - light.turn_off: direct
+    
+binary_sensor:
+  - platform: gpio
+    id: output3
+    pin:
+      number: GPIO14
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - invert:
+    on_click:
+#     min_length: 50ms
+#     max_length: 350ms
+      if:
+        condition:
+        - light.is_off:
+           id: direct
+        then:
+        - light.turn_on:
+           id: direct
+           brightness: 100%
+           red: 0%
+           green: 0%
+           blue: 0%
+           cold_white: 50%
+           warm_white: 50%
+        else:
+        - light.turn_off:
+           id: direct
+         
+  - platform: gpio
+    id: output33
+    pin:
+      number: GPIO15
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - invert:
+    on_click:
+#       min_length: 50ms
+#       max_length: 350ms
+      if:
+        condition:
+        - light.is_off:
+           id: ambient
+        then:
+        - light.turn_on:
+           id: ambient
+           brightness: 100%
+           red: 0%
+           green: 0%
+           blue: 0%
+           cold_white: 50%
+           warm_white: 50%
+        else:
+        - light.turn_off:
+           id: ambient
+         
+#ethernet:
+#  type: LAN8720
+#  mdc_pin: GPIO23
+#  mdio_pin: GPIO18
+#  clk_mode: GPIO0_IN
+#  phy_addr: 0
+
+sensor:
+  - platform: aht10
+    temperature:
+     name: "${esphome_name} - Temperature"
+    humidity:
+     name: "${esphome_name} - Humidity"
+    update_interval: 300s
+  - platform: bh1750
+    name: "BH1750 Illuminance"
+    address: 0x23
+    update_interval: 60s
+  - platform: uptime
+    name: "${esphome_name} - Uptime Sensor"
+  - platform: wifi_signal
+    name: "${esphome_name} - WiFi Signal"
+    update_interval: 60s
+    
+i2c:
+  sda: GPIO21
+  scl: GPIO22
+  scan: true
+  id: bus_a
